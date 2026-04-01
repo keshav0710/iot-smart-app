@@ -1,0 +1,19 @@
+App.tsx(20,6): error TS2322: Type '{ children: Element; style: { flex: number; }; }' is not assignable to type 'IntrinsicAttributes & GestureHandlerRootViewProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & GestureHandlerRootViewProps'.
+src/components/cards/WaterTankCard.tsx(40,17): error TS2607: JSX element class does not support attributes because it does not have a 'props' property.
+src/components/cards/WaterTankCard.tsx(40,18): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its type 'typeof LinearGradient' is not a valid JSX element type.
+    Type 'typeof LinearGradient' is not assignable to type 'new (props: any, context: any) => Component<any, any, any>'.
+      Type 'LinearGradient' is missing the following properties from type 'Component<any, any, any>': context, setState, forceUpdate, props, state
+src/components/relay/RelayToggleCard.tsx(40,16): error TS2322: Type '(false | { marginBottom: number; } | { borderColor: string; })[]' is not assignable to type 'ViewStyle'.
+  Types of property 'filter' are incompatible.
+    Type '{ <S extends false | { marginBottom: number; } | { borderColor: string; }>(predicate: (value: false | { marginBottom: number; } | { borderColor: string; }, index: number, array: (false | { marginBottom: number; } | { ...; })[]) => value is S, thisArg?: any): S[]; (predicate: (value: false | ... 1 more ... | { ...; }...' is not assignable to type 'string | readonly FilterFunction[] | undefined'.
+src/screens/LoginScreen.tsx(42,5): error TS2607: JSX element class does not support attributes because it does not have a 'props' property.
+src/screens/LoginScreen.tsx(42,6): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its type 'typeof LinearGradient' is not a valid JSX element type.
+    Type 'typeof LinearGradient' is not assignable to type 'new (props: any, context: any) => Component<any, any, any>'.
+      Type 'LinearGradient' is missing the following properties from type 'Component<any, any, any>': context, setState, forceUpdate, props, state
+src/screens/SchedulesScreen.tsx(93,33): error TS2322: Type '(false | { marginBottom: number; } | { opacity: number; })[]' is not assignable to type 'ViewStyle'.
+  Types of property 'filter' are incompatible.
+    Type '{ <S extends false | { marginBottom: number; } | { opacity: number; }>(predicate: (value: false | { marginBottom: number; } | { opacity: number; }, index: number, array: (false | { marginBottom: number; } | { opacity: number; })[]) => value is S, thisArg?: any): S[]; (predicate: (value: false | ... 1 more ... | { .....' is not assignable to type 'string | readonly FilterFunction[] | undefined'.
+src/services/firebase/config.ts(3,26): error TS2305: Module '"firebase/auth"' has no exported member 'getReactNativePersistence'.
