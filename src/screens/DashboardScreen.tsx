@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
-  TouchableOpacity,
+  TouchableOpacity, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../hooks/useAuth';
 import { useSensorData } from '../hooks/useSensorData';
 import { useRelayControl } from '../hooks/useRelayControl';
@@ -19,6 +19,38 @@ import { SecurityCard } from '../components/cards/SecurityCard';
 import { CameraCard } from '../components/cards/CameraCard';
 import { Colors, Spacing } from '../theme';
 import { useAppStore } from '../store/useAppStore';
+
+// Animated pulsing dot for live status
+function PulseDot({ color }: { color: string }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(0.7)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(scale, { toValue: 1.5, duration: 800, useNativeDriver: true }),
+          Animated.timing(scale, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.timing(opacity, { toValue: 0.2, duration: 800, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.7, duration: 800, useNativeDriver: true }),
+        ]),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <View style={{ width: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View style={{
+        position: 'absolute', width: 14, height: 14, borderRadius: 7,
+        backgroundColor: color, opacity,
+        transform: [{ scale }],
+      }} />
+      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
+    </View>
+  );
+}
 
 export function DashboardScreen() {
   const { theme } = useAppStore();
@@ -42,6 +74,7 @@ export function DashboardScreen() {
   const waterStatus = getWaterTankStatus(sensorData.waterLevel);
   const flameAlert = settings.sensors.flameSensorEnabled && sensorData.flameDetected;
   const waterAlert = settings.sensors.waterSensorEnabled && waterStatus.status === 'empty';
+  const isLive = connectionStatus === 'Live';
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -52,53 +85,73 @@ export function DashboardScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.separator }]}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.text }]}>Smart Home 🏠</Text>
-          <Text style={[styles.sub, { color: connectionStatus === 'Live' ? colors.success : colors.textMuted }]}>
-            {connectionStatus === 'Live' ? '● Live' : connectionStatus}
-          </Text>
+      {/* Gradient Header */}
+      <LinearGradient
+        colors={theme === 'dark'
+          ? ['rgba(108,99,255,0.12)', 'transparent']
+          : ['rgba(90,82,224,0.07)', 'transparent']}
+        style={styles.headerGradient}
+      >
+        <View style={[styles.header, { borderBottomColor: colors.separator }]}>
+          <View>
+            <Text style={[styles.greeting, { color: colors.text }]}>Smart Home 🏠</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}>
+              {isLive ? (
+                <PulseDot color={colors.success} />
+              ) : (
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.textFaint }} />
+              )}
+              <Text style={[styles.statusText, { color: isLive ? colors.success : colors.textMuted }]}>
+                {isLive ? 'Live' : connectionStatus}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.logoutBtn, { backgroundColor: colors.dangerLight, borderColor: colors.danger + '30' }]}
+            onPress={logout}
+          >
+            <Text style={[styles.logoutText, { color: colors.danger }]}>Sign Out</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={[styles.logoutBtn, { backgroundColor: colors.dangerLight }]}
-          onPress={logout}
-        >
-          <Text style={[styles.logoutText, { color: colors.danger }]}>Sign Out</Text>
-        </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
-      {/* Alerts */}
-      <AlertBanner
-        message="🔥 Flame Detected! Check your home immediately."
-        type="danger"
-        visible={Boolean(flameAlert)}
-      />
-      <AlertBanner
-        message="💧 Water tank is empty!"
-        type="warning"
-        visible={Boolean(waterAlert && !flameAlert)}
-      />
-
-      {/* Quick stats */}
+      {/* Quick stats — glowing cards */}
       <View style={[styles.statsRow, { borderBottomColor: colors.separator }]}>
+        {/* Devices ON */}
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: colors.primary }]}>{relayOnCount}</Text>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Devices On</Text>
+          <LinearGradient
+            colors={[colors.primary + '22', colors.primary + '08']}
+            style={[styles.statGlow, { borderColor: colors.primary + '30' }]}
+          >
+            <Text style={[styles.statValue, { color: colors.primary }]}>{relayOnCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Devices On</Text>
+          </LinearGradient>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.separator }]} />
+        {/* Power */}
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: colors.warning }]}>
-            {sensorData.power.toFixed(0)}W
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Power</Text>
+          <LinearGradient
+            colors={[colors.warning + '22', colors.warning + '08']}
+            style={[styles.statGlow, { borderColor: colors.warning + '30' }]}
+          >
+            <Text style={[styles.statValue, { color: colors.warning }]}>
+              {sensorData.power.toFixed(0)}W
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Power</Text>
+          </LinearGradient>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.separator }]} />
+        {/* Water */}
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: waterStatus.color }]}>
-            {waterStatus.percentage}%
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Water</Text>
+          <LinearGradient
+            colors={[waterStatus.color + '22', waterStatus.color + '08']}
+            style={[styles.statGlow, { borderColor: waterStatus.color + '30' }]}
+          >
+            <Text style={[styles.statValue, { color: waterStatus.color }]}>
+              {waterStatus.percentage}%
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Water</Text>
+          </LinearGradient>
         </View>
       </View>
 
@@ -108,6 +161,22 @@ export function DashboardScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       >
+        {/* Alerts INSIDE scroll — prevents overlap with stats bar */}
+        {flameAlert && (
+          <AlertBanner
+            message="🔥 Flame Detected! Check your home immediately."
+            type="danger"
+            visible
+          />
+        )}
+        {waterAlert && !flameAlert && (
+          <AlertBanner
+            message="💧 Water tank is empty!"
+            type="warning"
+            visible
+          />
+        )}
+
         <WaterTankCard
           waterLevel={sensorData.waterLevel}
           status={waterStatus}
@@ -140,21 +209,30 @@ export function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  headerGradient: {},
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderBottomWidth: 1,
   },
   greeting: { fontSize: 20, fontWeight: '800' },
-  sub: { fontSize: 12, marginTop: 2 },
-  logoutBtn: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs, borderRadius: 20 },
+  statusText: { fontSize: 12, fontWeight: '600' },
+  logoutBtn: {
+    paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs,
+    borderRadius: 20, borderWidth: 1,
+  },
   logoutText: { fontSize: 13, fontWeight: '600' },
   statsRow: {
-    flexDirection: 'row', padding: Spacing.md, borderBottomWidth: 1,
+    flexDirection: 'row', borderBottomWidth: 1,
+    paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs,
   },
-  statItem: { flex: 1, alignItems: 'center' },
+  statItem: { flex: 1, alignItems: 'center', padding: Spacing.xs },
+  statGlow: {
+    width: '100%', alignItems: 'center', paddingVertical: Spacing.sm,
+    borderRadius: 12, borderWidth: 1,
+  },
   statValue: { fontSize: 22, fontWeight: '800' },
   statLabel: { fontSize: 11, marginTop: 2 },
-  statDivider: { width: 1 },
+  statDivider: { width: 1, marginVertical: Spacing.xs },
   scroll: { flex: 1 },
   content: { padding: Spacing.md, paddingTop: Spacing.sm },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text, View } from 'react-native';
+import { Text, Platform } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import { LoginScreen } from '../screens/LoginScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
@@ -17,16 +17,14 @@ import { useAppStore } from '../store/useAppStore';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-function TabIcon({ name, focused, color }: { name: string; focused: boolean; color: string }) {
-  const icons: Record<string, string> = {
-    Home: '🏠', Devices: '⚡', Schedules: '⏰', Analytics: '📊', Settings: '⚙️', AI: '🤖',
-  };
-  return (
-    <View style={{ alignItems: 'center' }}>
-      <Text style={{ fontSize: focused ? 22 : 20, opacity: focused ? 1 : 0.55 }}>{icons[name]}</Text>
-    </View>
-  );
-}
+const TAB_ICONS: Record<string, string> = {
+  Home: '🏠',
+  Devices: '⚡',
+  Schedules: '⏰',
+  Analytics: '📊',
+  AI: '🤖',
+  Settings: '⚙️',
+};
 
 function MainTabs() {
   const { theme } = useAppStore();
@@ -36,18 +34,32 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color }) => <TabIcon name={route.name} focused={focused} color={color} />,
+        // Simple emoji icon — no wrapper View to avoid clipping
+        tabBarIcon: ({ focused }) => (
+          <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.45 }}>
+            {TAB_ICONS[route.name]}
+          </Text>
+        ),
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textFaint,
         tabBarStyle: {
           backgroundColor: colors.tabBar,
           borderTopColor: colors.tabBarBorder,
           borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 4,
+          height: Platform.OS === 'ios' ? 80 : 62,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          paddingTop: 8,
+          elevation: 16,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
         },
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '600',
+          marginTop: 2,
+        },
       })}
     >
       <Tab.Screen name="Home" component={DashboardScreen} />
@@ -68,7 +80,13 @@ export function AppNavigator() {
   if (loading) return <LoadingScreen message="Starting up..." />;
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
+        animation: 'fade',
+      }}
+    >
       {user ? (
         <Stack.Screen name="Main" component={MainTabs} />
       ) : (

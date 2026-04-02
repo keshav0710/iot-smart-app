@@ -21,10 +21,16 @@
         "backgroundColor": "#0A0A12"
       },
       "package": "com.smarthome.iot",
-      "edgeToEdgeEnabled": false
+      "edgeToEdgeEnabled": false,
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0b75cec4-e44b-4469-a8c9-56e7577ed6d3"
+      }
     }
   }
 }

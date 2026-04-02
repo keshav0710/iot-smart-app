@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlassCard } from '../ui/GlassCard';
 import { Colors, Spacing, Radius } from '../../theme';
@@ -17,9 +17,10 @@ export function WaterTankCard({ waterLevel, status, sensorEnabled }: Props) {
   const colors = Colors[theme];
 
   const statusLabel = status.status.charAt(0).toUpperCase() + status.status.slice(1);
+  const fillHeight = `${status.percentage}%` as `${number}%`;
 
   return (
-    <GlassCard style={styles.card}>
+    <GlassCard style={styles.card} glowColor={status.color}>
       <View style={styles.header}>
         <Text style={styles.icon}>💧</Text>
         <View>
@@ -37,10 +38,9 @@ export function WaterTankCard({ waterLevel, status, sensorEnabled }: Props) {
             <View style={[styles.tank, { borderColor: colors.cardBorder }]}>
               {/* Water fill */}
               <View style={styles.fillWrapper}>
-                {/* @ts-ignore - React 19 type mismatch */}
                 <LinearGradient
-                  colors={[status.color + '99', status.color]}
-                  style={[styles.fill, { height: `${status.percentage}%` }]}
+                  colors={[status.color + '99', status.color] as [string, string]}
+                  style={[styles.fill, { height: fillHeight } as ViewStyle]}
                 />
               </View>
               {/* Percentage text */}

@@ -4,6 +4,7 @@ import {
   Switch, TextInput, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../hooks/useAuth';
 import {
   useScheduledAutomations,
@@ -72,15 +73,27 @@ export function SchedulesScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.separator }]}>
-        <View>
-          <Text style={[styles.title, { color: colors.text }]}>Schedules</Text>
-          <Text style={[styles.sub, { color: colors.textMuted }]}>{schedules.length} configured</Text>
+      <LinearGradient
+        colors={theme === 'dark'
+          ? ['rgba(108,99,255,0.12)', 'transparent']
+          : ['rgba(90,82,224,0.07)', 'transparent']}
+      >
+        <View style={[styles.header, { borderBottomColor: colors.separator }]}>
+          <View>
+            <Text style={[styles.title, { color: colors.text }]}>Schedules ⏰</Text>
+            <Text style={[styles.sub, { color: colors.textMuted }]}>
+              {schedules.length === 0 ? 'No automations yet' : `${schedules.length} automation${schedules.length !== 1 ? 's' : ''}`}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.addBtn, { backgroundColor: colors.primary }]}
+            onPress={openAdd}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.addBtnText}>＋ Add</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={[styles.addBtn, { backgroundColor: colors.primary }]} onPress={openAdd}>
-          <Text style={styles.addBtnText}>+ Add</Text>
-        </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {schedules.length === 0 && !isLoading && (
@@ -91,7 +104,7 @@ export function SchedulesScreen() {
           </View>
         )}
         {schedules.map((s) => (
-          <GlassCard key={s.id} style={[styles.schedCard, !s.enabled && { opacity: 0.55 }]}>
+          <GlassCard key={s.id} style={[styles.schedCard, !s.enabled ? { opacity: 0.55 } : undefined]}>
             <View style={styles.schedTop}>
               <View style={[styles.timeBadge, {
                 backgroundColor: s.action === 'on' ? colors.successLight : colors.dangerLight,

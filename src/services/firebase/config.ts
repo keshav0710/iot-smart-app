@@ -1,10 +1,12 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getDatabase, Database } from 'firebase/database';
-// @ts-ignore - Metro bundler resolves this for React Native
-import { getReactNativePersistence } from 'firebase/auth';
-import { initializeAuth, Auth } from 'firebase/auth';
+import { initializeAuth, Auth, getAuth } from 'firebase/auth';
+import * as FirebaseAuth from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// @ts-ignore - Use type assertion for React Native persistence
+const getReactNativePersistence = (FirebaseAuth as any).getReactNativePersistence;
 
 const firebaseConfig = {
   apiKey: 'AIzaSyC44s2jxX1h_-fv3j_kmLvXwTeD9WpelBQ',

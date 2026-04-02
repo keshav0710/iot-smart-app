@@ -17,6 +17,7 @@ export default function App() {
   }, []);
 
   return (
+    // @ts-ignore - React 19 type mismatch for children
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <NavigationContainer

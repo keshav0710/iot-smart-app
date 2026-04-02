@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Switch, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Switch, TouchableOpacity, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { GlassCard } from '../ui/GlassCard';
 import { Colors, Spacing, Radius } from '../../theme';
@@ -36,23 +36,41 @@ export function RelayToggleCard({
     try { await onToggle(); } finally { setLoading(false); }
   };
 
+  // Fix: build style as ViewStyle object, not an array with booleans
+  const cardStyle: ViewStyle = {
+    marginBottom: Spacing.md,
+    ...(isOn ? { borderColor: colors.primary + '50' } : {}),
+  };
+
   return (
-    <GlassCard style={[styles.card, isOn && { borderColor: colors.primary + '50' }]}>
+    <GlassCard style={cardStyle} glowColor={isOn ? colors.primary : undefined}>
       <View style={styles.top}>
         <View style={styles.left}>
-          <Text style={styles.icon}>{icons[relayKey]}</Text>
+          {/* Icon with glow when on */}
+          <View style={[styles.iconBg, {
+            backgroundColor: isOn ? colors.primary + '20' : colors.separator,
+            borderColor: isOn ? colors.primary + '40' : 'transparent',
+          }]}>
+            <Text style={styles.icon}>{icons[relayKey]}</Text>
+          </View>
           <View>
             <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
-            <Text style={[styles.state, { color: isOn ? colors.success : colors.textMuted }]}>
-              {isOn ? '● ON' : '○ OFF'}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
+              <View style={{
+                width: 6, height: 6, borderRadius: 3,
+                backgroundColor: isOn ? colors.success : colors.textFaint,
+              }} />
+              <Text style={[styles.state, { color: isOn ? colors.success : colors.textMuted }]}>
+                {isOn ? 'ON' : 'OFF'}
+              </Text>
+            </View>
           </View>
         </View>
         {loading ? (
           <ActivityIndicator color={colors.primary} />
         ) : (
           <Switch
-            value={Boolean(isOn)}
+            value={isOn}
             onValueChange={handleToggle}
             trackColor={{ false: colors.separator, true: colors.primary }}
             thumbColor={isOn ? '#fff' : colors.textMuted}
@@ -85,12 +103,12 @@ export function RelayToggleCard({
 }
 
 const styles = StyleSheet.create({
-  card: { marginBottom: Spacing.md },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm },
   left: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  icon: { fontSize: 28 },
+  iconBg: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  icon: { fontSize: 22 },
   name: { fontSize: 15, fontWeight: '700' },
-  state: { fontSize: 12, marginTop: 2 },
+  state: { fontSize: 12, fontWeight: '600' },
   timerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
